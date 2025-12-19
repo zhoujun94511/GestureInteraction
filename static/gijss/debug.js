@@ -55,26 +55,26 @@ export function updateDebugInfo() {
     if (!statusEl) return;
 
     // ========== 性能监控 ==========
-    
+
     // FPS 计算和帧时间统计
     const currentTime = performance.now();
     const deltaTime = currentTime - lastFrameTime;
     lastFrameTime = currentTime;
     frameCount++;
-    
+
     // 记录帧时间用于CPU负载估算
     frameTimes.push(deltaTime);
     if (frameTimes.length > MAX_FRAME_SAMPLES) {
         frameTimes.shift(); // 保持最近60帧
     }
-    
+
     // 每500ms更新一次FPS显示
     fpsUpdateTimer += deltaTime;
     if (fpsUpdateTimer >= 500) {
         fps = Math.round((frameCount / fpsUpdateTimer) * 1000);
         frameCount = 0;
         fpsUpdateTimer = 0;
-        
+
         // 计算平均帧时间和CPU负载估算
         if (frameTimes.length > 0) {
             avgFrameTime = frameTimes.reduce((sum, t) => sum + t, 0) / frameTimes.length;
@@ -85,7 +85,7 @@ export function updateDebugInfo() {
             cpuLoad = Math.min(100, Math.max(0, (avgFrameTime / targetFrameTime) * 100));
         }
     }
-    
+
     if (fpsEl) {
         fpsEl.textContent = `${fps} fps (${avgFrameTime.toFixed(1)}ms)`;
         // 颜色编码：绿色(55+) 黄色(30-55) 红色(<30)
@@ -97,12 +97,12 @@ export function updateDebugInfo() {
             fpsEl.style.color = '#f00';
         }
     }
-    
+
     // CPU 负载估算（基于帧时间）
     if (cpuEl) {
         const cores = navigator.hardwareConcurrency || '未知';
         cpuEl.textContent = `${cores} 核 | 负载: ${cpuLoad.toFixed(0)}%`;
-        
+
         // 颜色编码：基于负载百分比
         if (cpuLoad < 60) {
             cpuEl.style.color = '#0f0'; // 轻负载
@@ -112,7 +112,7 @@ export function updateDebugInfo() {
             cpuEl.style.color = '#f00'; // 重负载
         }
     }
-    
+
     // 内存使用（如果浏览器支持）
     if (memoryEl) {
         if (performance.memory) {
@@ -120,7 +120,7 @@ export function updateDebugInfo() {
             const total = (performance.memory.jsHeapSizeLimit / 1024 / 1024).toFixed(0);
             const percent = ((performance.memory.usedJSHeapSize / performance.memory.jsHeapSizeLimit) * 100).toFixed(0);
             memoryEl.textContent = `${used}MB / ${total}MB (${percent}%)`;
-            
+
             // 颜色编码：绿色(<50%) 黄色(50-80%) 红色(>80%)
             if (percent < 50) {
                 memoryEl.style.color = '#0f0';
@@ -134,16 +134,16 @@ export function updateDebugInfo() {
             memoryEl.style.color = '#888';
         }
     }
-    
+
     // 粒子数量
     if (particleCountEl) {
         const count = PARTICLE_COUNT;
         particleCountEl.textContent = `${count.toLocaleString()} 个`;
         particleCountEl.style.color = '#0ff';
     }
-    
+
     // ========== 系统信息 ==========
-    
+
     if (screenSizeEl) {
         const width = window.innerWidth;
         const height = window.innerHeight;
@@ -156,23 +156,23 @@ export function updateDebugInfo() {
 
     statusEl.textContent = State.handPresent ? '✓ 检测到' : '✗ 未检测到';
     statusEl.style.color = State.handPresent ? '#0f0' : '#f00';
-    
+
     if (streamEl) {
         const active = State.currentStream && State.currentStream.active;
         streamEl.textContent = active ? '✓ 活跃状态' : '✗ 停止状态';
         streamEl.style.color = active ? '#0f0' : '#f00';
     }
-    
+
     // 运行模式诊断
     if (runModeEl) {
         const streamActive = State.currentStream && State.currentStream.active;
         const videoReady = State.videoElement && State.videoElement.readyState >= 2;
-        const videoHasDimensions = State.videoElement && 
-            State.videoElement.videoWidth > 0 && 
+        const videoHasDimensions = State.videoElement &&
+            State.videoElement.videoWidth > 0 &&
             State.videoElement.videoHeight > 0;
-        const lastUpdateAgo = State.lastHandTimestamp ? 
+        const lastUpdateAgo = State.lastHandTimestamp ?
             (performance.now() - State.lastHandTimestamp) : Infinity;
-        
+
         if (streamActive && videoReady && videoHasDimensions) {
             if (lastUpdateAgo < 2000) {
                 runModeEl.textContent = '正常模式';
@@ -197,16 +197,15 @@ export function updateDebugInfo() {
     }
 
     // ========== 手势交互 ==========
-    
+
     const gestureNames = {
         [GestureShape.Sphere]: '球体',
         [GestureShape.Ring]: '圆环',
         [GestureShape.Star]: '星形',
         [GestureShape.Heart]: '爱心',
-        [GestureShape.Text]: '文字',
-        [GestureShape.Dragon]: '龙'
+        [GestureShape.Text]: '文字'
     };
-    
+
     if (State.handPresent) {
         if (State.currentShape) {
             const stableCount = State.gestureHistory.length >= GESTURE_STABILITY_FRAMES ?
@@ -246,7 +245,7 @@ export function updateDebugInfo() {
     if (State.lastHandTimestamp) {
         const timeSince = performance.now() - State.lastHandTimestamp;
         let displayText;
-        
+
         if (timeSince < 1000) {
             displayText = `${timeSince.toFixed(0)}ms前`;
             updateEl.style.color = '#0f0';
@@ -259,7 +258,7 @@ export function updateDebugInfo() {
             displayText = `${minutes}分${seconds}秒前`;
             updateEl.style.color = '#f00';
         }
-        
+
         updateEl.textContent = displayText;
     } else {
         updateEl.textContent = '从未更新';
@@ -282,11 +281,11 @@ export function toggleDebug() {
         console.warn('[Debug] UI元素已被全局隐藏，无法显示调试面板');
         return;
     }
-    
+
     State.debugEnabled = !State.debugEnabled;
     const panel = document.getElementById('debug-panel');
     const btn = document.getElementById('debug-toggle') || document.getElementById('debugPanelBtn');
-    
+
     if (panel) {
         if (State.debugEnabled) {
             panel.classList.remove('hidden');
@@ -309,14 +308,14 @@ export function getPerformanceStats() {
         handPresent: State.handPresent,
         currentShape: State.currentShape
     };
-    
+
     // 添加内存信息（如果可用）
     if (performance.memory) {
         stats.memoryUsedMB = (performance.memory.usedJSHeapSize / 1024 / 1024).toFixed(1);
         stats.memoryLimitMB = (performance.memory.jsHeapSizeLimit / 1024 / 1024).toFixed(0);
         stats.memoryPercent = ((performance.memory.usedJSHeapSize / performance.memory.jsHeapSizeLimit) * 100).toFixed(0);
     }
-    
+
     return stats;
 }
 
