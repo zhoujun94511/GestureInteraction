@@ -11,6 +11,11 @@
 
 ---
 
+![Demo GIF](Demo_GIF.gif)
+
+---
+
+
 ## 📝 Introduction
 
 GestureInteraction is a web-based Augmented Reality (AR) hand gesture particle interaction system.
