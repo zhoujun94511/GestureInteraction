@@ -8,8 +8,7 @@ export const GestureShape = {
     Ring: 'ring',
     Star: 'star',
     Heart: 'heart',
-    Text: 'text',
-    Dragon: 'dragon'
+    Text: 'text'
 };
 
 export let colorDirty = false;
@@ -164,7 +163,7 @@ export function updateUIElementsVisibility(cameraAvailable = false) {
         setAllUIElementsVisible(false);
         return;
     }
-    
+
     // 全局开关为true，根据相机可用性显示
     setUIElementsByCamera(cameraAvailable);
 }
@@ -182,9 +181,9 @@ function setAllUIElementsVisible(visible) {
     const frontCamBtn = document.getElementById('frontCamBtn');
     const backCamBtn = document.getElementById('backCamBtn');
     const qrContainer = document.getElementById('qr-container');
-    
+
     const displayValue = visible ? '' : 'none';
-    
+
     if (topBtns) {
         topBtns.style.display = displayValue;
         if (visible) {
@@ -193,27 +192,27 @@ function setAllUIElementsVisible(visible) {
             topBtns.classList.remove('visible');
         }
     }
-    
+
     if (debugPanelBtn) {
         debugPanelBtn.style.display = displayValue;
     }
-    
+
     if (downloadCertBtn) {
         downloadCertBtn.style.display = displayValue;
     }
-    
+
     if (cameraSwitchBtns) {
         cameraSwitchBtns.style.display = displayValue;
     }
-    
+
     if (frontCamBtn) {
         frontCamBtn.style.display = displayValue;
     }
-    
+
     if (backCamBtn) {
         backCamBtn.style.display = displayValue;
     }
-    
+
     if (qrContainer) {
         qrContainer.style.display = displayValue;
         if (visible) {
@@ -224,14 +223,14 @@ function setAllUIElementsVisible(visible) {
             qrContainer.classList.remove('visible');
         }
     }
-    
+
     if (debugPanel) {
         if (!visible) {
             debugPanel.classList.add('hidden');
             State.debugEnabled = false;
         }
     }
-    
+
     // UI元素显示状态已更新（日志已移除）
 }
 
@@ -248,60 +247,60 @@ function setUIElementsByCamera(cameraAvailable) {
     const frontCamBtn = document.getElementById('frontCamBtn');
     const backCamBtn = document.getElementById('backCamBtn');
     const qrContainer = document.getElementById('qr-container');
-    
+
     // 调试面板和二维码：始终显示（当UI开关为true时）
     if (debugPanelBtn) {
         debugPanelBtn.style.display = '';
     }
-    
+
     if (topBtns) {
         topBtns.style.display = '';
         topBtns.classList.add('visible');
     }
-    
+
     if (qrContainer) {
         qrContainer.style.display = '';
         qrContainer.classList.remove('hidden');
         qrContainer.classList.add('visible');
     }
-    
+
     if (cameraAvailable) {
         // 有相机：显示所有元素
         if (downloadCertBtn) {
             downloadCertBtn.style.display = 'inline-block';
         }
-        
+
         if (cameraSwitchBtns) {
             cameraSwitchBtns.style.display = 'flex';
         }
-        
+
         if (frontCamBtn) {
             frontCamBtn.style.display = '';
         }
-        
+
         if (backCamBtn) {
             backCamBtn.style.display = '';
         }
-        
+
         // 相机可用：显示所有UI元素（日志已移除）
     } else {
         // 无相机：仅显示调试面板和二维码
         if (downloadCertBtn) {
             downloadCertBtn.style.display = 'none';
         }
-        
+
         if (cameraSwitchBtns) {
             cameraSwitchBtns.style.display = 'none';
         }
-        
+
         if (frontCamBtn) {
             frontCamBtn.style.display = 'none';
         }
-        
+
         if (backCamBtn) {
             backCamBtn.style.display = 'none';
         }
-        
+
         // 相机不可用：仅显示调试面板和二维码（日志已移除）
     }
 }
