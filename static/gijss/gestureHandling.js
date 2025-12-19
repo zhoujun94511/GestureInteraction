@@ -52,11 +52,11 @@ async function detectCameras() {
         );
 
         const hasCamera = videoDevices.length > 0;
-        
+
         // 根据相机可用性更新UI元素显示
         // updateUIElementsVisibility会检查UI_ELEMENTS_VISIBLE，然后根据相机状态显示相应元素
         updateUIElementsVisibility(hasCamera);
-        
+
         // 如果有多个相机，更新相机按钮状态
         if (hasCamera && videoDevices.length > 1) {
             updateCameraButtonState();
@@ -144,7 +144,7 @@ function enterDemoMode(alreadySetup = false) {
     setLoading("未检测到摄像头，进入演示模式…");
     setTimeout(() => hideLoading(), 800);
 
-    const demoShapes = ["sphere", "ring", "star", "heart", "text", "dragon"];
+    const demoShapes = ["sphere", "ring", "star", "heart", "text"];
     let idx = 0;
 
     const startDemo = () => {
@@ -205,7 +205,7 @@ async function init() {
     // 初始化时还没有检测到相机，所以传入false
     // 后续在detectCameras()中会根据实际相机状态更新UI
     updateUIElementsVisibility(false);
-    
+
     continueInit();
 }
 
@@ -215,7 +215,7 @@ function setupMediaPipe() {
 
     // 移动端使用更低分辨率以减少内存占用和处理负担
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-    const videoConstraints = isMobile 
+    const videoConstraints = isMobile
         ? { facingMode: State.useFrontCamera ? "user" : "environment", width: 480, height: 360 }  // 移动端降低分辨率
         : { facingMode: State.useFrontCamera ? "user" : "environment", width: 640, height: 480 };
 
@@ -270,7 +270,7 @@ function initHands(videoElement) {
 
     // 降低移动端复杂度以加快加载和减少内存使用
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-    
+
     hands.setOptions({
         selfieMode: true,
         maxNumHands: 1,
@@ -278,7 +278,7 @@ function initHands(videoElement) {
         minDetectionConfidence: 0.65,
         minTrackingConfidence: 0.65
     });
-    
+
     console.log(`[MediaPipe] 配置: 移动端=${isMobile}, 模型复杂度=${isMobile ? 0 : 1}`);
 
     hands.onResults(results => {
@@ -321,20 +321,20 @@ function initHands(videoElement) {
     // 关键修复：等待视频准备好后立即发送第一帧以触发模型加载
     const waitForVideoAndSendFirstFrame = async () => {
         console.log('[MediaPipe] 等待视频流准备...');
-        
+
         // 等待视频准备好
         const maxWaitTime = 10000; // 最多等10秒
         const startTime = Date.now();
-        
+
         while (Date.now() - startTime < maxWaitTime) {
             if (videoElement && videoElement.readyState >= 2) {
                 // 额外检查：确保视频有有效尺寸
                 if (videoElement.videoWidth > 0 && videoElement.videoHeight > 0) {
                     console.log(`[MediaPipe] 视频流已准备 (${videoElement.videoWidth}x${videoElement.videoHeight})，发送第一帧...`);
-                    
+
                     // 添加延迟，确保 MediaPipe 完全初始化
                     await new Promise(resolve => setTimeout(resolve, 300));
-                    
+
                     try {
                         await hands.send({ image: videoElement });
                         firstFrameSent = true;
@@ -354,7 +354,7 @@ function initHands(videoElement) {
             }
             await new Promise(resolve => setTimeout(resolve, 100)); // 每100ms检查一次
         }
-        
+
         if (!firstFrameSent) {
             console.error('[MediaPipe] 视频流在10秒内未准备好');
             clearTimeout(handsLoadTimeout);
@@ -362,7 +362,7 @@ function initHands(videoElement) {
             setTimeout(() => hideLoading(), 2000);
         }
     };
-    
+
     // 立即开始等待和发送第一帧
     waitForVideoAndSendFirstFrame();
 
@@ -371,18 +371,18 @@ function initHands(videoElement) {
 
         try {
             // 只在视频准备好且有有效尺寸时处理
-            if (frameCount % PROCESS_EVERY_N_FRAMES === 0 && 
-                videoElement && 
+            if (frameCount % PROCESS_EVERY_N_FRAMES === 0 &&
+                videoElement &&
                 videoElement.readyState >= 2 &&
                 videoElement.videoWidth > 0 &&
                 videoElement.videoHeight > 0) {
-                
+
                 // 超时重启检测
                 if (handsProcessing && performance.now() - State.lastHandTimestamp > 5000) {
                     console.warn('[MediaPipe] 处理超时，重启手势检测');
                     handsProcessing = false;
-                    try { 
-                        await handsInstance.close(); 
+                    try {
+                        await handsInstance.close();
                     } catch (e) {
                         console.warn('Close hands failed:', e);
                     }
@@ -397,26 +397,26 @@ function initHands(videoElement) {
                         await hands.send({ image: videoElement });
                     } catch (err) {
                         console.error("Hands send failed:", err);
-                        
+
                         // 处理内存错误
                         if (err.message && err.message.includes('memory')) {
                             console.error('[MediaPipe] ❌ 内存访问错误，停止手势检测');
                             State.lastError = '手势检测内存错误';
                             clearTimeout(handsLoadTimeout);
                             clearInterval(loadingHintTimer);
-                            
+
                             // 停止进一步处理
                             try {
                                 await handsInstance.close();
                             } catch (e) {
                                 console.warn('Close hands after error failed:', e);
                             }
-                            
+
                             setLoading("手势检测出错<br>继续无手势模式…");
                             setTimeout(() => hideLoading(), 2000);
                             return; // 停止 processFrame
                         }
-                        
+
                         State.lastError = `Hands错误: ${err.message || err.name || '未知错误'}`;
                     } finally {
                         handsProcessing = false;
@@ -533,8 +533,6 @@ function recognizeGesture(landmarks) {
 
     const fingersCount = [thumbOpen, indexOpen, middleOpen, ringOpen, pinkyOpen].filter(Boolean).length;
 
-    // Dragon: Three-finger gesture (thumb + index + middle)
-    if (thumbOpen && indexOpen && middleOpen && !ringOpen && !pinkyOpen) return GestureShape.Dragon;  // ← 修复：使用 GestureShape.Dragon
     // 原始判定顺序：Victory/Text -> Star -> Heart -> Sphere -> Ring
     if (indexOpen && middleOpen && !ringOpen && !pinkyOpen && !thumbOpen) return GestureShape.Text;
     if (indexOpen && !middleOpen && !ringOpen && !pinkyOpen && !thumbOpen) return GestureShape.Star;
@@ -569,11 +567,11 @@ function downloadCert() {
 
 function skipHandsLoading() {
     console.log('[User] 用户选择跳过手势加载');
-    
+
     // 清理所有定时器
     clearTimeout(handsLoadTimeout);
     clearInterval(loadingHintTimer);
-    
+
     // 停止手势模型加载
     if (handsInstance) {
         try {
@@ -582,14 +580,14 @@ function skipHandsLoading() {
             console.warn('Failed to close hands instance:', e);
         }
     }
-    
+
     // 隐藏跳过按钮
     const skipBtn = document.getElementById('skip-loading-btn');
     if (skipBtn) skipBtn.style.display = 'none';
-    
+
     // 隐藏加载提示
     hideLoading();
-    
+
     console.log('[App] 已进入无手势交互模式，可正常使用粒子动画');
 }
 
