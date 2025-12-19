@@ -1,4 +1,4 @@
-﻿import * as THREE from 'three';
+import * as THREE from 'three';
 import {
     State,
     GestureShape,
@@ -32,8 +32,7 @@ export const SHAPE_GENERATORS = {
     [GestureShape.Ring]: generateRing,
     [GestureShape.Star]: generateStar,
     [GestureShape.Heart]: generateHeart,
-    [GestureShape.Text]: generateText,
-    [GestureShape.Dragon]: generateDragon
+    [GestureShape.Text]: generateText
 };
 
 // ========== 彩虹粒子效果 ==========
@@ -367,76 +366,6 @@ export function generateText() {
 }
 
 
-
-
-// ========== Universal 3D Model Generation Function ==========
-// This is now a general-purpose function that can handle any GLB/GLTF model
-// Simply change the model path to render different 3D models as particles
-
-// Loading state management to prevent concurrent loads
-let dragonLoadingState = {
-    isLoading: false,
-    isLoaded: false,
-    cachedPoints: null,
-    lastError: null
-};
-
-export async function generateDragon() {
-    // Prevent concurrent loading attempts
-    if (dragonLoadingState.isLoading) {
-        return;
-    }
-    
-    // Use cached points if already loaded
-    if (dragonLoadingState.isLoaded && dragonLoadingState.cachedPoints) {
-        PointCloudGenerator.applyToTargets(dragonLoadingState.cachedPoints, State.targets);
-        rainbowParticles();
-        return;
-    }
-    
-    dragonLoadingState.isLoading = true;
-    
-    try {
-        console.log("[Dragon] Loading 3D model...");
-        
-        // Universal model loader - works with any GLB/GLTF model
-        const model = await ModelLoader.loadModel('/static/models/dragon.glb');
-        
-        // Generate point cloud with hybrid per-mesh sampling
-        // This ensures all model components (body parts) are properly represented
-        const points = PointCloudGenerator.meshToPointCloud(model, {
-            targetCount: PARTICLE_COUNT,           // Total number of particles
-            targetSize: 12.0,                      // Size to scale model to (larger = more visible)
-            rotation: new THREE.Euler(0, Math.PI, 0), // Face forward
-            samplingMethod: 'auto',                // 'auto' | 'hybrid' | 'surface' | 'uniform'
-            surfaceDensity: 0.85,                  // Ratio of surface vs vertex sampling (0.0-1.0)
-            minPointsPerMesh: null                 // Auto-calculate minimum points per mesh component
-        });
-
-        // Cache the points for future use
-        dragonLoadingState.cachedPoints = points;
-        dragonLoadingState.isLoaded = true;
-        dragonLoadingState.lastError = null;
-
-        // Apply to particle targets
-        PointCloudGenerator.applyToTargets(points, State.targets);
-
-        // Apply rainbow effect for visual appeal
-        rainbowParticles();
-        console.log("[Dragon] ✓ 3D model → particle cloud generated successfully");
-        
-    } catch (error) {
-        console.error("[Dragon] Failed to load model:", error);
-        dragonLoadingState.lastError = error;
-        
-        // Fallback to sphere if model loading fails
-        console.log("[Dragon] Falling back to sphere...");
-        generateSphere();
-        rainbowParticles();
-    } finally {
-        dragonLoadingState.isLoading = false;
-    }
-}
 
 
 // ========== Physics and Animation ==========
