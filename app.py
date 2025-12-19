@@ -64,25 +64,49 @@ def open_browser():
     time.sleep(1)
     webbrowser.open_new_tab(f'https://{use_local_ip}:5001')
 
+# if __name__ == '__main__':
+#
+#     # 正确加载 crt + key，而不是 p12 !!
+#     context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+#     context.load_cert_chain(
+#         certfile="ssl/server.crt",
+#         keyfile="ssl/server.key"
+#     )
+#
+#     # 自动打开浏览器
+#     if not hasattr(app, 'browser_opened') or not app.browser_opened:
+#         threading.Thread(target=open_browser).start()
+#         app.browser_opened = True
+#     print("Binding to:", use_local_ip)
+#
+#     # 启动 HTTPS 服务
+#     app.run(
+#         host=use_local_ip,
+#         port=5001,
+#         debug=True,
+#         use_reloader=False,
+#         ssl_context=context
+#     )
+
 if __name__ == '__main__':
 
-    # 正确加载 crt + key，而不是 p12 !!
     context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
     context.load_cert_chain(
         certfile="ssl/server.crt",
         keyfile="ssl/server.key"
     )
 
-    # 自动打开浏览器
-    if not hasattr(app, 'browser_opened') or not app.browser_opened:
-        threading.Thread(target=open_browser).start()
-        app.browser_opened = True
+    def open_browser():
+        time.sleep(1)
+        webbrowser.open_new_tab('https://localhost:5001')
 
-    # 启动 HTTPS 服务
+    threading.Thread(target=open_browser).start()
+
     app.run(
-        host=use_local_ip,
+        host="0.0.0.0",
         port=5001,
         debug=True,
         use_reloader=False,
         ssl_context=context
     )
+
